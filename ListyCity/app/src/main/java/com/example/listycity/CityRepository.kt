@@ -1,7 +1,6 @@
 package com.example.listycity
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 
@@ -33,10 +32,6 @@ class CityRepository {
                 }
             }
         }
-
-
-
-
     }
 
 
@@ -45,6 +40,10 @@ class CityRepository {
     }
 
     fun updateCity(oldCity: City, updatedCity: City) {
+        /* Because firestore doesn't allow document paths/ids to be updated, we have to delete
+         * the old entry then add a new entry.
+         * Thus, this function is little more than an alias for the add and delete functions.
+        */
         deleteCity(oldCity)
         addCity(updatedCity)
     }

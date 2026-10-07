@@ -163,6 +163,12 @@ fun CityListScreen(
             }
         }
         if (deleteConfirmation) {
+            /* This is the section for my popup dialog.
+             * The Dialog() function refuses to run from within button calls.
+             * It complains about them not being @Composable.
+             * Thus, my solution is to just have this segment that is always present and have the
+             * button update the boolean value to show/hide this dialog.
+             */
             DeleteConfirm(
                 city = selectedCity as City,
                 onCancel = { deleteConfirmation = it },
@@ -192,6 +198,10 @@ fun CityListScreen(
             }
         }
         if (selectedCity != null) {
+            /* This section holds my delete button.
+             * This button mostly just exists to update the earlier boolean value to show the
+             * deletion confirmation dialog.
+             */
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -213,6 +223,14 @@ fun DeleteConfirm(city: City, onCancel: (Boolean) -> Unit, onConfirm: () -> Unit
     Dialog(onDismissRequest = {
         onCancel(false)
     }) {
+        /* city: City is the City object to be deleted. This won't ever be null due to the delete
+         *      button itself not being invokable when selectedCity is null.
+         * onCancel: (Boolean) -> Unit this inline lambda function sets the deleteConfirmation
+         *      variable to false, thus hiding the confirmation dialog box.
+         * onConfirm: () -> Unit is an inline lambda function which passes nothing back up to the
+         *      parent function and causes it to invoke CityRepository's city deletion function
+         *      and resets the related editing variables.
+         */
         Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text("Warning!", fontSize = 24.sp, color = Color.Red)
