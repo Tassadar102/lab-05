@@ -1,5 +1,6 @@
 package com.example.listycity
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
@@ -22,9 +24,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.listycity.ui.theme.ListyCityTheme
 
 @Composable
@@ -32,6 +37,7 @@ fun CityListScreen(
     cities: List<City>,
     onAddCity: (City) -> Unit,
     onUpdateCity: (City, City) -> Unit,
+    onDeleteCity: (City) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var newCityName by remember { mutableStateOf("") }
@@ -40,6 +46,7 @@ fun CityListScreen(
     var selectedCity by remember { mutableStateOf<City?>(null) }
     var editedCityName by remember { mutableStateOf("") }
     var editedProvinceName by remember { mutableStateOf("") }
+    var deleteConfirmation by remember { mutableStateOf(false)}
 
     Column(modifier = modifier.fillMaxSize()) {
         Row(
@@ -155,7 +162,18 @@ fun CityListScreen(
                 }
             }
         }
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        if (deleteConfirmation) {
+            DeleteConfirm(
+                city = selectedCity as City,
+                onCancel = { deleteConfirmation = it },
+                onConfirm = {
+                    onDeleteCity(selectedCity as City)
+                    selectedCity = null
+                    editedCityName = ""
+                    editedProvinceName = ""
+                })
+        }
+        LazyColumn(modifier = Modifier.fillMaxSize().weight(1f)) {
             itemsIndexed(cities) { index, city ->
                 CityRow(
                     city = city,
@@ -170,6 +188,53 @@ fun CityListScreen(
                 )
                 if (index < cities.lastIndex) {
                     HorizontalDivider()
+                }
+            }
+        }
+        if (selectedCity != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Button(onClick = { deleteConfirmation = true }, colors = ButtonColors(
+                    Color.Red,
+                    Color.White,
+                    Color.Gray,
+                    Color.White)) {
+                    Text("DELETE CITY")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DeleteConfirm(city: City, onCancel: (Boolean) -> Unit, onConfirm: () -> Unit) {
+    Dialog(onDismissRequest = {
+        onCancel(false)
+    }) {
+        Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text("Warning!", fontSize = 24.sp, color = Color.Red)
+            }
+            Text("You are about to delete " + city.name + ", " + city.province + ". This action is" +
+                    " irreversible. Please be certain that you wish to perform this action.",
+                textAlign = TextAlign.Center)
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Button(onClick = {onCancel(false)}) {
+                    Text("Cancel")
+                }
+                Button(onClick = {
+                    onConfirm()
+                    onCancel(false)
+                },colors = ButtonColors(
+                    Color.Red,
+                    Color.White,
+                    Color.Gray,
+                    Color.White)) {
+                    Text("Confirm")
                 }
             }
         }
@@ -213,7 +278,8 @@ fun CityListScreenPreview() {
                 City("Calgary", "AB")
             ),
             onAddCity = {},
-            onUpdateCity = { _, _ -> }
+            onUpdateCity = { _, _ -> },
+            onDeleteCity = {}
         )
     }
 }
